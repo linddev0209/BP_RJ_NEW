@@ -4,7 +4,7 @@ import { ref, defineEmits } from 'vue'
 
 const isModalVisible = ref(false);
 const statusFlag = ref();
-defineProps(['vacation']);
+const {vacation, managerEmails} = defineProps(['vacation', 'managerEmails']);
 const emit = defineEmits();
 
 async function onDeleteClick( id, status ){
@@ -26,9 +26,8 @@ async function onDeleteClick( id, status ){
     
     <p id="userId" style="display: none;">{{ vacation.user.id }}</p>
     <p id="managerName" style="display: none;">{{ $page.props.auth.user.name }}</p>
-    
     <!-- If manager -->
-    <div v-if="$page.props.auth.user.email=='sr.dev529@gmail.com'">
+    <div v-if="managerEmails.includes($page.props.auth.user.email)">
         <!-- If deleted -->
         <div v-if="vacation.delflag" style="background-color: lightgrey;">
             <div class="p-6 flex space-x-2">
@@ -149,12 +148,6 @@ async function onDeleteClick( id, status ){
                                     new Date(vacation.created_at).toLocaleString()
                                 }}</small>
                         </div>
-                        <button @click="onDeleteClick(vacation.id, 'Deleted')">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                            </svg>
-                        </button>
                     </div>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.request_type }}</p>
                     <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.start_date }} </span>
@@ -203,14 +196,6 @@ async function onDeleteClick( id, status ){
                                     new Date(vacation.created_at).toLocaleString()
                                 }}</small>
                         </div>
-                        <button @click="onDeleteClick(vacation.id, 'Deleted')">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="h-5  w-5 text-gray-400">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                            </svg>
-                        </button>
-
                     </div>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.request_type }}</p>
                     <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.start_date }} </span>

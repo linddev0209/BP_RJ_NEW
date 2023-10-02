@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Notification;
 use App\Models\Vacation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -19,15 +20,19 @@ class NotificationController extends Controller
     {
         if( Auth::user() != null )
         {
+        $all_users=User::get();
         $user_id = Auth::user()->id;
+        $user_type = Auth::user()->user_type;
         return Inertia::render('Dashboard', ['vacations' => Vacation::with('user:id,name')->where('delflag', false)->where('status', 'Pending')->latest()->get(),
                                              'acceptedVacations' => Vacation::with('user:id,name')->where('delflag', false)->where('status', 'Accepted')->latest()->get(),
-                                             'notifications' => Notification::select('*')->where('userid', $user_id)->latest()->get()]);
+                                             'notifications' => Notification::select('*')->where('userid', $user_id)->latest()->get(), 'users' => $all_users, 'userId' => $user_id, 'userType' => $user_type]);
         }
-        else
+        else{
+            $all_users=User::get();
             return Inertia::render('Dashboard', ['vacations' => Vacation::with('user:id,name')->where('delflag', false)->where('status', 'Pending')->latest()->get(),
                                              'acceptedVacations' => Vacation::with('user:id,name')->where('delflag', false)->where('status', 'Accepted')->latest()->get(),
-                                             'notifications' => Notification::select('*')->latest()->get()]);
+                                             'notifications' => Notification::select('*')->latest()->get(), 'users' => $all_users, 'userId' => $user_id, 'userType' => $user_type]);
+        }
     }
 
     /**

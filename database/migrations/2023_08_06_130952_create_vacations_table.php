@@ -16,8 +16,8 @@ return new class extends Migration
             $table->timestamps();
             
             // custom
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->date('start_date')->format('d-m-y'); // Specify the date format here
+            $table->date('end_date')->format('d-m-y');   // Specify the date format here
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->string('reason');

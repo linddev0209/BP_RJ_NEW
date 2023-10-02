@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
 use App\Models\Notification;
 use Illuminate\Foundation\Application;
@@ -41,7 +42,7 @@ Route::get('/', function () {
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);;
-Route::get('/admin/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);;
+// Route::get('/admin/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);;
 
 Route::delete('/vacations/{id}', [VacationController::class, 'destroy'])->name('vacations.destroy');
 Route::post('/updateVacation', [VacationController::class, 'update']);
@@ -51,6 +52,16 @@ Route::post('/notidirect', [NotificationController::class, 'show']);
 Route::resource('ferie', VacationController::class)
     ->only(['index', 'store'])
     ->middleware(['auth', 'verified']);
+
+Route::resource('manager_user', UserController::class)
+    ->only(['index'])
+    ->middleware(['auth', 'verified']);
+
+Route::middleware('auth')->group(function () {
+    Route::post('/user_authorization_update/{employee_id}', [UserController::class, 'update']);
+    Route::post('/user_info_update/{employee_id}', [UserController::class, 'updateInfo']);
+    Route::delete('/user_info_delete/{employee_id}', [UserController::class, 'deleteUserInfo']);
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
