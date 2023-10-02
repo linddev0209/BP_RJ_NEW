@@ -1,0 +1,13 @@
+
+1. id: A unique identifier for each vacation request, serving as the primary key of the table.
+2. employee: The name or identifier of the employee making the vacation request. This field should be linked to an employee table containing all employee information.
+3. start_date: The date when the employee wants to start the vacation.
+4. end_date: The date when the employee wants to end the vacation.
+5. reason: A field to describe the reason for the vacation request (e.g., vacation, sickness, personal reason, etc.).
+6. status: The status of the vacation request (e.g., pending, approved, rejected, canceled, etc.).
+7. created_date: The date when the vacation request was created.
+8. approval_date: The date when the vacation request was approved, if applicable.
+9. rejection_date: The date when the vacation request was rejected, if applicable.
+10. manager_id: A unique identifier for the manager or supervisor handling the vacation request.
+11. manager_comment: A space for the manager's or supervisor's comment regarding the vacation request.
+
