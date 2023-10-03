@@ -17,11 +17,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->boolean('authorization')->default(false);
             $table->rememberToken();
             $table->timestamps();
 
             // custom
-            $table->enum('user_type', ['employee', 'manager', 'admin'])->default('employee');
+            $table->enum('user_type', ['employee', 'manager', 'admin'])->nullable();
 
         });
     }

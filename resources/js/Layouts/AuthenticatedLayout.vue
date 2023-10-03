@@ -12,6 +12,13 @@ import NotiDropDown from '@/Components/NofiDropDown.vue';
 const showingNavigationDropdown = ref(false);
 const notis = inject('notifications')
 const vacas = inject('vacations')
+const users = inject('users')
+const userType = inject('userType');
+const managerEmails = [];
+users.map((user)=>{
+    if(user.user_type==="manager")
+    managerEmails.push(user.email);
+})
 
 // Check if 'notis' is empty
 const isNotisEmpty = notis && notis.length > 0;
@@ -22,6 +29,7 @@ async function notihandleMgr(){
     const link = document.getElementById('hiddenLink');
     link.click();
 }
+
 </script>
 
 <template>
@@ -49,6 +57,9 @@ async function notihandleMgr(){
                                 <NavLink :href="route('ferie.index')" :active="route().current('ferie.index')">
                                     Personal Request
                                 </NavLink>
+                                <NavLink v-if="userType=='manager'" :href="route('manager_user.index')" :active="route().current('manager_user.index')">
+                                    User Info
+                                </NavLink>
                                 <NavLink id="hiddenLink" :href="route('ferie.index', { tnum: 2 })" :active="route().current('ferie.index')" style="display: none;">
                                     Personal Request
                                 </NavLink>
@@ -65,8 +76,7 @@ async function notihandleMgr(){
                                                 type="button"
                                                 class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                             >
-                                                <span v-if="$page.props.auth.user.email=='sr.dev529@gmail.com'">{{ $page.props.auth.user.name }} (Manager)</span>
-                                                <span v-else>{{ $page.props.auth.user.name }} (Employee)</span>
+                                                <span>{{ $page.props.auth.user.name }} {{ $page.props.auth.user.user_type }}</span>
 
                                                 <svg
                                                     class="ml-2 -mr-0.5 h-4 w-4"
@@ -101,7 +111,7 @@ async function notihandleMgr(){
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
                                             <button
-                                                v-if="(isNotisEmpty && $page.props.auth.user.email != 'sr.dev529@gmail.com') || (isNotisEmptyVac && $page.props.auth.user.email == 'sr.dev529@gmail.com')"
+                                                v-if="(isNotisEmpty && !managerEmails.includes($page.props.auth.user.email)) || (isNotisEmptyVac && managerEmails.includes($page.props.auth.user.email))"
                                                 type="button"
                                                 class="inline-flex items-left px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                             >
@@ -127,6 +137,8 @@ async function notihandleMgr(){
                                                 v-else
                                                 type="button"
                                                 class="inline-flex items-left px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                :disabled="true"
+                                                style="cursor: pointer;"
                                             >
                                                 <svg width="24px" height="24px" viewBox="0 0 24 24" id="_24x24_On_Light_Notification" data-name="24x24/On Light/Notification" xmlns="http://www.w3.org/2000/svg">
                                                     <rect id="view-box" width="24" height="24" fill="none"/>
@@ -137,7 +149,7 @@ async function notihandleMgr(){
                                     </template>
 
                                     <template #content>
-                                        <Notification v-if="$page.props.auth.user.email=='sr.dev529@gmail.com'" v-for="vacation in vacas" class="cursor-pointer" :title="'Requeset from '+ vacation.user.name" :createDate="vacation.start_date+' ~ '+vacation.end_date" :type="'Pending'" @click="notihandleMgr()"/>
+                                        <Notification v-if="managerEmails.includes($page.props.auth.user.email)" v-for="vacation in vacas" class="cursor-pointer" :title="'Requeset from '+ vacation.user.name" :createDate="vacation.start_date+' ~ '+vacation.end_date" :type="'Pending'" @click="notihandleMgr()"/>
                                         <Notification v-else v-for="notification in notis" class="cursor-pointer" :title="notification.notititle" :createDate="notification.notified_at" :type="notification.notitype" @click="notihandleMgr()" />
                                     </template>
                                 </NotiDropDown>
@@ -189,16 +201,16 @@ async function notihandleMgr(){
                         <ResponsiveNavLink :href="route('ferie.index')" :active="route().current('ferie.index')">
                             Richiedi ferie
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('manager_user.index')" :active="route().current('manager_user.index')">
+                            User Info
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
                     <div class="pt-4 pb-1 border-t border-gray-200">
                         <div class="px-4">
-                            <div v-if="$page.props.auth.user.email=='sr.dev529@gmail.com'" class="font-medium text-base text-gray-800">
-                                {{ $page.props.auth.user.name }}(Manager)
-                            </div>
-                            <div v-else class="font-medium text-base text-gray-800">
-                                {{ $page.props.auth.user.name }}(Employee)
+                            <div class="font-medium text-base text-gray-800">
+                                {{ $page.props.auth.user.name }}{{ $page.props.auth.user.user_type }}
                             </div>
                             <div class="font-medium text-sm text-gray-500">{{ $page.props.auth.user.email }}</div>
                         </div>

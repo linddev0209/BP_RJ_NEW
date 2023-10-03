@@ -9,8 +9,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -31,9 +33,26 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+        
+        
+        $userEmail = $request->user()->email;
 
+        // Retrieve a single user by email
+        $user = User::where('email', $userEmail)->first();
         $request->session()->regenerate();
+        // Check if the user exists and their authorization status
+        if ($user && $user->authorization == false) {
+            Auth::guard('web')->logout();
 
+            $request->session()->invalidate();
+
+            $request->session()->regenerateToken();
+            throw ValidationException::withMessages([
+                'email' => trans('auth.authorization'),
+            ]);
+            return redirect('/login');
+        }
+        
         return redirect()->intended(RouteServiceProvider::HOME);
     }
 

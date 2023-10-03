@@ -14,31 +14,52 @@ import flatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 import {Italian} from 'flatpickr/dist/l10n/it.js';
 import axios from 'axios';
-import { ref, defineProps, provide } from 'vue';
+import { ref, defineProps, provide, computed } from 'vue';
 import Modal from '@/Components/Modal.vue';
+import { createHydrationRenderer } from 'vue';
+import Pagination from "../../Components/Pagination.vue"; 
 
 const isModalVisible = ref(false);
 const dropdownOptions = ["MARRIAGE LEAVE", "PARENTAL LEAVE", "APPRENTICESHIP COURSE", "COMPANY MEDICAL EXAMINATION", "PAID PERMIT", "NON-MANDATORY TRAINING COURSE", 
                          "COMPULSORY TRAINING COURSE", "BLOOD DONATION", "STUDY PERMIT", "HOLIDAYS"];
 const subbuttons=["", "Pending List", "Accepted List", "Rejected List", "Pending List", "Deleted List", "Request History"];
-const adminEmails = ['sr.dev529@gmail.com'];
-const managerEmails = ['sr.dev529@gmail.com'];
+const adminEmails = ['lindseyhildebrand0209@gmail.com'];
+const managerEmails = [];
 const enddatestate = ref(false);
-const vacationRefs = ref();
 const ajax_flag = ref(false);
 const requestListTitle = ref('Pending List');
-const {vacations, notifications} = defineProps(['vacations', 'notifications']);
+const {vacations, notifications, users, userType, userId} = defineProps(['vacations', 'notifications', 'users', 'userType', 'userId']);
 const whichPage = ref(1);
-
+const vacationRefs = ref(vacations);
+let userVacations = [];
+userVacations = vacations.filter((vacation) => vacation.user_id == userId);
+let userVacationRefsArray = userVacations;
+let totalPages = 0;
+let totalRefPages = 0; 
 provide(/* key */ 'notifications', /* value */ notifications);
-provide(/* key */ 'vacations', /* value */ vacations)
+provide(/* key */ 'vacations', /* value */ vacations);
+provide(/* key */ 'users', /* value */ users);
+provide(/* key */ 'userType', /* value */ userType);
+provide(/* key */ 'userId', /* value */ userId);
 
+users.map((user)=>{
+    if(user.user_type==="manager")
+    managerEmails.push(user.email);
+})
+
+
+const isWholeDay = ref(true);
+const isPeriod = ref(true);
+const isDisabled = ref(true);
+const isFormVisible = ref(false);
 const selectOption = (idx) => {
+    isFormVisible.value = true;
     resetEverything();
+
     // UI handle
     switch (idx)
     {
-        case 0:
+        case 0:  
         case 1:
         case 9:
             setVisibleTrue('none');                 // hide the check box div
@@ -105,6 +126,10 @@ function resetEverything(){
     document.getElementById('fromthe').value = '';
     document.getElementById('tothe').value = '';
     document.getElementById('textAreaId').text = '';
+    isWholeDay.value = false;
+    isPeriod.value = false;
+    isDisabled.value = false;
+    
     form.reset();
 }
 
@@ -194,13 +219,22 @@ function chkboxClicked(flag){
 }
 
 function startDate() {
-    form.start_date = s_date.value
+    console.log("startDate", s_date.value);
+    let _startdate = s_date.value;
+    const parts = _startdate.split('-');
+    const [day, month, year] = parts;
+    const e_startDate = `${year}-${month}-${day}`;
+    form.start_date = e_startDate
     if( enddatestate.value )
-        e_date.value = s_date.value;
+        e_date.value = e_startDate;
 }
 
 function endDate() {
-    form.end_date = e_date.value
+    let _enddate = e_date.value;
+    const endParts = _enddate.split('-');
+    const [day, month, year] = endParts;
+    const e_endDate = `${year}-${month}-${day}`;
+    form.end_date = e_endDate
 }
 
 function startTime(){
@@ -344,6 +378,17 @@ async function updateShow(status) {
         });
         // Handle the response
         vacationRefs.value = response.data.vacations;
+        if(userType=="employee"){
+
+            userVacationRefsArray = vacationRefs.value.filter((vacationRef) => vacationRef.user_id == userId);
+            totalPages = computed(() => Math.ceil(userVacations.length / itemNumbers) );
+        }else if(userType == "manager"){
+            userVacationRefsArray = vacationRefs.value;
+            totalPages = computed(() => Math.ceil(vacationArray.length / itemNumbers)); 
+        }
+        totalRefPages = computed(() => Math.ceil(userVacationRefsArray.length / itemNumbers));
+        updateTempManagerVacationArray();
+        updateTempManagerRefVacationArray();
         ajax_flag.value = true;
         //document.getElementById('listDom').innerHTML = "<Vacation v-for='vacation in "+response.data.vacations+"' :key='vacation.id':vacation='vacation'/>";
         
@@ -351,6 +396,94 @@ async function updateShow(status) {
         // Handle errors
         refreshPage();
     }
+}
+
+
+///////For Manager/////////
+const currentPage = ref(1); // Initialize currentPage to 1
+const currentManagerRefPage = ref(1); // Initialize currentManagerRefPage to 1
+const tempManagerVacationArray = ref([]); // Use ref for reactive variable
+const tempManagerVacationRefArray = ref([]); // Use ref for reactive variable
+const itemNumbers = 2;
+let vacationArray = vacations;
+// let vacationRefsArray = vacationRefs;
+// Calculate the total number of pages
+if (userType == "employee"){
+    totalPages = computed(() => Math.ceil(userVacations.length / itemNumbers) );
+    vacationArray = userVacations
+}else if(userType == "manager"){
+    totalPages = computed(() => Math.ceil(vacationArray.length / itemNumbers)); // Use computed to make it reactive
+}
+
+// Define the updateTempManagerVacationArray function
+const updateTempManagerVacationArray = () => {
+    tempManagerVacationArray.value = []; // Access .value to modify the ref
+
+    const startIndex = (currentPage.value - 1) * itemNumbers;
+    const endIndex = Math.min(startIndex + itemNumbers, vacationArray.length);
+
+    for (let i = startIndex; i < endIndex; i++) {
+        tempManagerVacationArray.value.push(vacationArray[i]);
+    }
+}
+
+// Initialize the tempManagerVacationArray based on the first page
+updateTempManagerVacationArray();
+
+const previousPage = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--; // Decrease currentPage by 1
+        updateTempManagerVacationArray();
+    }
+}
+
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++; // Increase currentPage by 1
+        updateTempManagerVacationArray();
+    }
+}
+
+const gotoPage = (page) => {
+    currentPage.value = page; // Update currentPage when a page is clicked
+    updateTempManagerVacationArray();
+}
+
+// Calculate the total number of pages for reference vacations
+totalRefPages = computed(() => Math.ceil(userVacationRefsArray.length / itemNumbers));
+
+// Define the updateTempManagerRefVacationArray function
+const updateTempManagerRefVacationArray = () => {
+    tempManagerVacationRefArray.value = []; // Access .value to modify the ref
+
+    const startIndex = (currentManagerRefPage.value - 1) * itemNumbers;
+    const endIndex = Math.min(startIndex + itemNumbers, userVacationRefsArray.length);
+
+    for (let i = startIndex; i < endIndex; i++) {
+        tempManagerVacationRefArray.value.push(userVacationRefsArray[i]);
+    }
+}
+
+// Initialize the tempManagerVacationRefArray based on the first page
+updateTempManagerRefVacationArray();
+
+const previousRefPage = () => {
+    if (currentManagerRefPage.value > 1) {
+        currentManagerRefPage.value--; // Decrease currentManagerRefPage by 1
+        updateTempManagerRefVacationArray();
+    }
+}
+
+const nextRefPage = () => {
+    if (currentManagerRefPage.value < totalRefPages.value) {
+        currentManagerRefPage.value++; // Increase currentManagerRefPage by 1
+        updateTempManagerRefVacationArray();
+    }
+}
+
+const gotoRefPage = (page) => {
+    currentManagerRefPage.value = page; // Update currentManagerRefPage when a page is clicked
+    updateTempManagerRefVacationArray();
 }
 
 function refreshPage(){
@@ -371,6 +504,11 @@ const closeModal = () => {
     isModalVisible.value = false;
 };
 
+const test = () => {
+   console.log(vacations);
+   console.log(tempManagerVacationArray.value);
+   console.log(tempManagerVacationRefArray.value);
+ }
 </script>
 
 <template>
@@ -461,104 +599,111 @@ const closeModal = () => {
                     <InputError :message="form.errors.request_type" class="mt-2"/>
                 </div>
                 <!-- END -->
+                <div id="selectForm" v-if="isFormVisible">
+                    <!-- CHECK BOX LINE -->
+                    <div id="chkbox" style="margin-top: 1rem;" class="flex  flex-row gap-4" >
+                        
+                        <div class="basis-1/2">
+                            <label id="chkbox1" class="inline-flex items-center cursor-pointer" @click="chkboxClicked(1)">
+                                <Checkbox id="wholeday" :disabled="isWholeDay"/>
+                                <p class="ml-2">Whole Day</p>
+                            </label>
+                        </div>
 
-                <!-- CHECK BOX LINE -->
-                <div id="chkbox" style="margin-top: 1rem;" class="flex  flex-row gap-4" >
-                    
-                    <div class="basis-1/2">
-                        <label id="chkbox1" class="inline-flex items-center cursor-pointer" @click="chkboxClicked(1)">
-                            <Checkbox id="wholeday" />
-                            <p class="ml-2">Whole Day</p>
-                        </label>
+                        <div class="basis-1/2">
+                            <label id="chkbox2" class="inline-flex items-center cursor-pointer" @click="chkboxClicked(2)">
+                                <Checkbox id="period" :disabled="isPeriod" />
+                                <p class="ml-2">Periodical by Hour</p>
+                            </label>
+                        </div>
+
                     </div>
+                    <!-- END -->
 
-                    <div class="basis-1/2">
-                        <label id="chkbox2" class="inline-flex items-center cursor-pointer" @click="chkboxClicked(2)">
-                            <Checkbox id="period" />
-                            <p class="ml-2">Periodical by Hour</p>
-                        </label>
+                    <!-- DATE LINE -->
+                    <div id="fromto" style="margin-top: 1rem;" class="flex  flex-row gap-4" >
+                        
+                        <div class="basis-1/2">
+                            <flat-pickr 
+                                        id="fromthe"
+                                        v-model="s_date"
+                                        :config="config_start"
+                                        placeholder="From the"
+                                        class=" block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        readonly="readonly"
+                                        @on-change="startDate()"
+                                        :disabled="isDisabled"
+                            />
+                            <InputError :message="form.errors.start_date" class="mt-2"/>
+                        </div>
+                        <div id="tothediv" class="basis-1/2">
+                            <flat-pickr 
+                                        id="tothe"
+                                        v-model="e_date"
+                                        :config="config_end"
+                                        placeholder="To the"
+                                        class=" block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        readonly="readonly"
+                                        @on-change="endDate()"
+                                        :disabled="isDisabled"
+                                        v-bind:disabled="enddatestate"
+                            />
+
+                            <InputError :message="form.errors.end_date" class="mt-2"/>
+                        </div>
+
                     </div>
+                    <!-- END -->
 
+                    <!-- TIME LINE -->
+                    <div id="dalleat" style="margin-top: 1rem;" class="flex  flex-row gap-4">
+                        
+                        <div class="basis-1/2">
+                            <flat-pickr 
+                                        id="startTime"
+                                        v-model="s_time"
+                                        :config="config_time"
+                                        placeholder="Dalle"
+                                        class=" block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        readonly="readonly"
+                                        @on-close="startTime()"
+                                        :disabled="isDisabled"
+                            />
+                            <InputError :message="form.errors.start_time" class="mt-2"/>
+                        </div>
+                        <div id="endTimediv" class="basis-1/2">
+                            <flat-pickr 
+                                        id="endTime"
+                                        v-model="e_time"
+                                        :config="config_time"
+                                        placeholder="At"
+                                        class=" block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        readonly="readonly"
+                                        @on-close="endTime()"
+                                        :disabled="isDisabled"
+                            />
+
+                            <InputError :message="form.errors.end_time" class="mt-2"/>
+                        </div>
+                    </div>
+                    <!-- END -->
+
+                    <!-- TEXTAREA LINE -->
+                    <textarea
+                        id="textAreaId"
+                        v-model="form.reason"
+                        placeholder="Motivazione"
+                        class="mt-4 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                        :disabled="isDisabled"
+                    ></textarea>
+                    <!-- END -->
+
+                    <!-- SUBMIT BUTTON -->
+                    <InputError :message="form.errors.reason" class="mt-2"/>
+                    <PrimaryButton class="mt-4 justify-end" :disabled="isDisabled">Send Request</PrimaryButton>
+                    <!-- END -->
                 </div>
-                <!-- END -->
-
-                <!-- DATE LINE -->
-                <div id="fromto" style="margin-top: 1rem;" class="flex  flex-row gap-4">
-                    
-                    <div class="basis-1/2">
-                        <flat-pickr 
-                                    id="fromthe"
-                                    v-model="s_date"
-                                    :config="config_start"
-                                    placeholder="From the"
-                                    class=" block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                                    readonly="readonly"
-                                    @on-change="startDate()"
-                        />
-                        <InputError :message="form.errors.start_date" class="mt-2"/>
-                    </div>
-                    <div id="tothediv" class="basis-1/2">
-                        <flat-pickr 
-                                    id="tothe"
-                                    v-model="e_date"
-                                    :config="config_end"
-                                    placeholder="To the"
-                                    class="block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                                    readonly="readonly"
-                                    @on-change="endDate()"
-                                    v-bind:disabled="enddatestate"
-                        />
-
-                        <InputError :message="form.errors.end_date" class="mt-2"/>
-                    </div>
-
-                </div>
-                <!-- END -->
-
-                <!-- TIME LINE -->
-                <div id="dalleat" style="margin-top: 1rem;" class="flex  flex-row gap-4">
-                    
-                    <div class="basis-1/2">
-                        <flat-pickr 
-                                    id="startTime"
-                                    v-model="s_time"
-                                    :config="config_time"
-                                    placeholder="Dalle"
-                                    class=" block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                                    readonly="readonly"
-                                    @on-close="startTime()"
-                        />
-                        <InputError :message="form.errors.start_time" class="mt-2"/>
-                    </div>
-                    <div id="endTimediv" class="basis-1/2">
-                        <flat-pickr 
-                                    id="endTime"
-                                    v-model="e_time"
-                                    :config="config_time"
-                                    placeholder="At"
-                                    class="block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                                    readonly="readonly"
-                                    @on-close="endTime()"
-                        />
-
-                        <InputError :message="form.errors.end_time" class="mt-2"/>
-                    </div>
-                </div>
-                <!-- END -->
-
-                <!-- TEXTAREA LINE -->
-                <textarea
-                    id="textAreaId"
-                    v-model="form.reason"
-                    placeholder="Motivazione"
-                    class="mt-4 block w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                ></textarea>
-                <!-- END -->
-
-                <!-- SUBMIT BUTTON -->
-                <InputError :message="form.errors.reason" class="mt-2"/>
-                <PrimaryButton class="mt-4 justify-end">Send Request</PrimaryButton>
-                <!-- END -->
+                
 
             </form>
         </div>
@@ -575,12 +720,150 @@ const closeModal = () => {
                 <SecondaryButton v-if="isManager($page.props.auth.user.email)" :active="isActive5" @click="toggleActive(5)" class="mt-4 flex-1 flex items-center justify-center">Deleted List</SecondaryButton>
                 <SecondaryButton v-if="isManager($page.props.auth.user.email)" :active="isActive6" @click="toggleActive(6)" class="mt-4 flex-1 flex items-center justify-center">Request History</SecondaryButton>
             </div>
-            <div id="listDom" class="mt-6 bg-white shadow-sm rounded-lg divide-y">
-
-                <Vacation v-if="!ajax_flag" v-for="vacation in vacations" :key="vacation.id" :vacation="vacation" @handleTest="handleTest()"/>
-                <Vacation v-else v-for="vacation in vacationRefs" :vacation="vacation" @handleTest="handleTest()"/>
+            <div id="listDom" v-if="isManager($page.props.auth.user.email)" class="mt-6 bg-white shadow-sm rounded-lg divide-y">
+                <div v-if="!ajax_flag">
+                    <Vacation v-for="vacation in tempManagerVacationArray" :key="vacation.id" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="vacations.length !== 0">
+                        <ul>
+                            <li class="pagination-item" @click="previousPage" :class="{ disabled: currentPage === 1 }">
+                                <button :disabled="currentPage === 1" style="font-size: 10px;">prev</button>
+                            </li>
+                            <li v-for="page in totalPages" :key="page" >
+                                <button @click="gotoPage(page)" :class="{ active: page === currentPage }">{{ page }}</button>
+                            </li>
+                            <li class="pagination-item" @click="nextPage" :class="{ disabled: currentPage === totalPages }">
+                                <button :disabled="currentPage === totalPages" style="font-size: 10px;">next</button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div v-else>
+                    <Vacation v-for="vacation in tempManagerVacationRefArray" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="userVacationRefsArray.length !== 0">
+                        <ul>
+                            <li class="pagination-item" @click="previousRefPage" :class="{ disabled: currentManagerRefPage === 1 }">
+                                <button :disabled="currentManagerRefPage === 1" style="font-size: 10px;">
+                                    prev
+                                </button>
+                            </li>
+                            <li v-for="page in totalRefPages" :key="page" >
+                                <button @click="gotoRefPage(page)" :class="{ active: page == currentManagerRefPage }">{{ page }}</button>
+                            </li>
+                            <li class="pagination-item" @click="nextRefPage" :class="{ disabled: currentManagerRefPage === totalRefPages }">
+                                <button :disabled="currentManagerRefPage === totalRefPages" style="font-size: 10px;">
+                                    next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
+            <div id="listDom" v-if="!isManager($page.props.auth.user.email)" class="mt-6 bg-white shadow-sm rounded-lg divide-y">
+                <div v-if="!ajax_flag">
+                    <Vacation v-for="vacation in tempManagerVacationArray" :key="vacation.id" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="userVacationRefsArray.length !== 0">
+                        <ul>
+                            <li class="pagination-item" @click="previousPage" :class="{ disabled: currentPage === 1 }">
+                                <button :disabled="currentPage === 1" style="font-size: 10px;">prev</button>
+                            </li>
+                            <li v-for="page in totalPages" :key="page" >
+                                <button @click="gotoPage(page)" :class="{ active: page === currentPage }">{{ page }}</button>
+                            </li>
+                            <li class="pagination-item" @click="nextPage" :class="{ disabled: currentPage === totalPages }">
+                                <button :disabled="currentPage === totalPages" style="font-size: 10px;">next</button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div v-else>
+                    <Vacation v-for="vacation in tempManagerVacationRefArray" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="userVacationRefsArray.length !== 0">
+                        <ul>
+                            <li class="pagination-item" @click="previousRefPage" :class="{ disabled: currentManagerRefPage === 1 }">
+                                <button :disabled="currentManagerRefPage === 1" style="font-size: 10px;">
+                                    prev
+                                </button>
+                            </li>
+                            <li v-for="page in totalRefPages" :key="page" >
+                                <button @click="gotoRefPage(page)" :class="{ active: page == currentManagerRefPage }">{{ page }}</button>
+                            </li>
+                            <li class="pagination-item" @click="nextRefPage" :class="{ disabled: currentManagerRefPage === totalRefPages }">
+                                <button :disabled="currentManagerRefPage === totalRefPages" style="font-size: 10px;">
+                                    next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- <button @click="test">test</button> -->
+            
         </div>
         <!-- END -->
     </AuthenticatedLayout>
 </template>
+<style scoped>
+.active {
+  background-color: #007bff !important; /* Example background color for the active button */
+  color: #fff !important; /* Example text color for the active button */
+  font-weight: bold; /* Example font weight for the active button */
+  /* Add any other styles you want for the active class */
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  
+  .pagination ul {
+    list-style-type: none;
+    display: flex;
+    padding: 0;
+  }
+  
+  .pagination li {
+    margin: 0 0.5rem;
+  }
+  
+  .pagination-item {
+    cursor: pointer;
+  }
+  
+  .pagination-item.disabled button {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+  
+  .pagination-item.active button {
+    background-color: #3498db;
+    color: #fff;
+    font-weight: bold;
+    border: 1px solid #3498db;
+    border-radius: 50%;
+  }
+  
+  .pagination button {
+    background-color: #fff;
+    color: #3498db;
+    border: 1px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .pagination button i {
+    font-size: 20px;
+  }
+  
+  .pagination button:disabled {
+    background-color: #f2f2f2;
+    color: #d9d9d9;
+    border: 1px solid #d9d9d9;
+    cursor: not-allowed;
+  }
+  </style>

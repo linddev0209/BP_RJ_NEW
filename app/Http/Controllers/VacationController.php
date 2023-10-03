@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Vacation;
 use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +19,10 @@ class VacationController extends Controller
     public function index( Request $request ): Response
     {
         $user_id = Auth::user()->id;
+        $all_users=User::get();
+        $user_type = Auth::user()->user_type;
         return Inertia::render('Vacation/Index', [  'vacations' => Vacation::with('user:id,name')->where('delflag', false)->where('status', 'Pending')->latest()->get(),
-                                                        'notifications' => Notification::select('*')->where('userid', $user_id)->latest()->get()]);
+                                                        'notifications' => Notification::select('*')->where('userid', $user_id)->latest()->get(), 'users' => $all_users, 'userType'=>$user_type, 'userId'=>$user_id]);
     }
 
     /**
@@ -75,7 +78,7 @@ class VacationController extends Controller
         $status = $request->input('data.status');
 
         Notification::where('notitype', $status)->delete();
-        
+        $example = "example";
         if( $status == 'Deleted')
             return response()->json(['vacations' => Vacation::with('user:id,name')->where('delflag', true)->latest()->get()]);
         else if( $status == 'All' )
@@ -96,9 +99,10 @@ class VacationController extends Controller
         $user_id = $id_status[2];
         $auth_name = $id_status[3];
         $time_stamp = date('Y-m-d H:i:s');
-     
+        $userIdentification = Auth::user()->id;
         $notification = new Notification();
         $vacation = Vacation::find($real_id);
+        $example = "example";
 
         if (!$vacation) {
             return response()->json(['message' => 'Vacation not found'], 404);
