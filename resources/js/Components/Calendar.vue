@@ -45,7 +45,7 @@
                                                 />
                                             </DisclosureButton>
                                             <DisclosurePanel class="px-4 pt-4 pb-2 text-sm text-gray-500">
-                                                <span class="mt-4 text-1xl font-bold text-yellow-700">{{detailedEvent.start_date}}~{{ detailedEvent.end_date }}</span><br/>
+                                                <span class="mt-4 text-1xl font-bold text-yellow-700">{{detailedEvent.start_date}} {{detailedEvent.start_time}} ~ {{ detailedEvent.end_date }} {{detailedEvent.end_time}}</span><br/>
                                                 {{ detailedEvent.reason }}
                                             </DisclosurePanel>
                                         </Disclosure>
@@ -120,7 +120,7 @@
                     </div>
                 </div>
                 <div class="isolate grid w-full grid-cols-7 grid-rows-6 gap-px lg:hidden">
-                    <button v-for="day in currentMonthDays" :key="day.date" type="button" :class="[day.isCurrentMonth ? 'bg-white' : 'bg-gray-50', (day.isSelected || day.isToday) && 'font-semibold', day.isSelected && 'text-white', !day.isSelected && day.isToday && 'text-indigo-600', !day.isSelected && day.isCurrentMonth && !day.isToday && 'text-gray-900', !day.isSelected && !day.isCurrentMonth && !day.isToday && 'text-gray-500', 'flex h-14 flex-col px-3 py-2 hover:bg-gray-100 focus:z-10']">
+                    <button v-for="day in currentMonthDays" :key="day.date" type="button" :class="[day.isCurrentMonth ? 'bg-white' : 'bg-gray-50', (day.isSelected || day.isToday) && 'font-semibold', day.isSelected && 'text-white', !day.isSelected && day.isToday && 'text-indigo-600', !day.isSelected && day.isCurrentMonth && !day.isToday && 'text-gray-900', !day.isSelected && !day.isCurrentMonth && !day.isToday && 'text-gray-500', 'flex h-14 flex-col px-3 py-2 hover:bg-gray-100 focus:z-10']" @click="day.events.length > 0?dayClicked(day):undefined">
                         <time :datetime="day.date" :class="[day.isSelected && 'flex h-6 w-6 items-center justify-center rounded-full', day.isSelected && day.isToday && 'bg-indigo-600', day.isSelected && !day.isToday && 'bg-gray-900', 'ml-auto']">{{ day.date.split('-').pop().replace(/^0/, '') }}</time>
                         <span class="sr-only">{{ day.events.length }} events</span>
                         <span v-if="day.events.length > 0" class="-mx-0.5 mt-auto flex flex-wrap-reverse">
@@ -171,6 +171,7 @@ import {  Disclosure,
           DialogTitle, } from '@headlessui/vue'
 import Modal from '@/Components/Modal.vue';
 import {inject, ref} from 'vue'
+import { onMounted } from 'vue';
 
 const vacas = inject('acceptedVacations')
 const strMonth = ['January', 'Febrary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -182,6 +183,8 @@ const currentDate = new Date();
 const currentYear = currentDate.getFullYear();
 const currentMonth = currentDate.getMonth() + 1;
 const currentDay = currentDate.getDate();
+const _userId = inject('userId');
+const _userType = inject('userType');
 var currentMonthDays = getDaysInMonth(currentYear, currentMonth);
 
 function closeModal() {
@@ -228,29 +231,39 @@ function dayClicked( day ){
 }
 
 function createEvents(day, mon, yr){
+    let vacasArray=[];
+    if (_userType == "manager"){
+        vacasArray = vacas
+    }else{
+        vacasArray = vacas.filter(vaca=>_userId == vaca.user_id);
+    }
     var events = [];
-    for( const vaca of vacas ){
-        var sDate = parseInt(vaca.start_date.split("-")[0])
+    for( const vaca of vacasArray ){
+      //  var sDate = parseInt(vaca.start_date.split("-")[0])
+        var sDate = parseInt(vaca.start_date.split("-")[2])
         var month = parseInt(vaca.start_date.split("-")[1])
-        var year = parseInt(vaca.start_date.split("-")[2])
-        var eDate = parseInt(vaca.end_date.split("-")[0])
+      //  var year = parseInt(vaca.start_date.split("-")[2])
+        var year = parseInt(vaca.start_date.split("-")[0])
+       // var eDate = parseInt(vaca.end_date.split("-")[0])
+        var eDate = parseInt(vaca.end_date.split("-")[2])
         var sTime = parseInt(vaca.start_time.split(":")[0])
         var eTime = parseInt(vaca.end_time.split(":")[0])
         var event_time = '';
 
-        if( sTime > 12 )
-            event_time += (sTime - 12)+'PM~'
-        else
-            event_time += sTime+'AM~'
+      //  if( sTime > 12 )
+       //     event_time += (sTime - 12)+'PM~'
+      //  else
+      //      event_time += sTime+'AM~'
 
-        if( eTime > 12 )
-            event_time += (eTime - 12)+'PM'
-        else
-            event_time += eTime+'AM'
+       // if( eTime > 12 )
+      //      event_time += (eTime - 12)+'PM'
+      //  else
+      //      event_time += eTime+'AM'
 
+        event_time += sTime+'~'
+        event_time += eTime
         if( sTime==0 && eTime==0 )
             event_time = 'All day'
-
         if( day >= sDate && day <= eDate && mon == parseInt(month) && yr == parseInt(year) )
         {
             events.push({
@@ -267,12 +280,21 @@ function createEvents(day, mon, yr){
 }
 
 function getVacatonsInRange(yr, mon, day){
+    let vacasArray=[];
+    if (_userType == "manager"){
+        vacasArray = vacas
+    }else{
+        vacasArray = vacas.filter(vaca=>_userId == vaca.user_id);
+    }
     var vacass = [];
-    for( const vaca of vacas ){
-        var sDate = parseInt(vaca.start_date.split("-")[0])
+    for( const vaca of vacasArray ){
+       // var sDate = parseInt(vaca.start_date.split("-")[0])
+        var sDate = parseInt(vaca.start_date.split("-")[2])
         var month = parseInt(vaca.start_date.split("-")[1])
-        var year = parseInt(vaca.start_date.split("-")[2])
-        var eDate = parseInt(vaca.end_date.split("-")[0])
+      //  var year = parseInt(vaca.start_date.split("-")[2])
+        var year = parseInt(vaca.start_date.split("-")[0])
+        //var eDate = parseInt(vaca.end_date.split("-")[0])
+        var eDate = parseInt(vaca.end_date.split("-")[2])
         var sTime = parseInt(vaca.start_time.split(":")[0])
         var eTime = parseInt(vaca.end_time.split(":")[0])
 

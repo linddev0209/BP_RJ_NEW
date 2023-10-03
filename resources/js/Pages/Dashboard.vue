@@ -4,11 +4,14 @@ import Calendar from '@/Components/Calendar.vue'
 import { Head } from '@inertiajs/vue3';
 import { provide } from 'vue';
 
-const {vacations, acceptedVacations, notifications} = defineProps(['vacations', 'acceptedVacations', 'notifications']);
+const {vacations, acceptedVacations, notifications, users, userId, userType} = defineProps(['vacations', 'acceptedVacations', 'notifications', 'users', 'userId', 'userType']);
 
 provide(/* key */ 'vacations', /* value */ vacations);
 provide(/* key */ 'acceptedVacations', /* value */ acceptedVacations);
 provide(/* key */ 'notifications', /* value */ notifications);
+provide(/* key */ 'users', /* value */ users);
+provide(/* key */ 'userId', /* value */ userId);
+provide(/* key */ 'userType', /* value */ userType);
 
 </script>
 

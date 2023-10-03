@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\WarehouseController;
 use App\Models\Notification;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -28,28 +30,26 @@ Route::get('/', function () {
     ]);
 });
 
-// Route::get('/dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-// Route::get('/admin/dashboard', function () {
-//     return Inertia::render('Manager/Dashboard');
-// })->middleware(['auth', 'verified', 'manager'])->name('dashboard');
-
-// Route::get('/admin/dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);;
-Route::get('/admin/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);;
+Route::get('/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);
 
 Route::delete('/vacations/{id}', [VacationController::class, 'destroy'])->name('vacations.destroy');
-Route::post('/updateVacation', [VacationController::class, 'update']);
+Route::delete('/deleteWarehouse/{id}', [WarehouseController::class, 'destroy'])->name('deleteWarehouse.destroy');
 
+Route::post('/updateVacation', [VacationController::class, 'update']);
 Route::post('/notidirect', [NotificationController::class, 'show']);
+Route::post('/registerWarehouse', [WarehouseController::class, 'store']);
+Route::post('/registerPIVToWarehouse', [WarehouseController::class, 'create']);
+Route::post('/updateWarehouse', [WarehouseController::class, 'update']);
+Route::post('/updateWarehouseEdit', [WarehouseController::class, 'edit']);
 
 Route::resource('ferie', VacationController::class)
     ->only(['index', 'store'])
+    ->middleware(['auth', 'verified']);
+Route::resource('manager_user', UserController::class)
+    ->only(['index'])
+    ->middleware(['auth', 'verified']);
+Route::resource('warehouse_manage', WarehouseController::class)
+    ->only(['index'])
     ->middleware(['auth', 'verified']);
 
 Route::middleware('auth')->group(function () {
