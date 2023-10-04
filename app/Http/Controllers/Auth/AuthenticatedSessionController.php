@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cookie;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -38,7 +39,7 @@ class AuthenticatedSessionController extends Controller
         $userEmail = $request->user()->email;
 
         // Retrieve a single user by email
-        $user = User::where('email', $userEmail)->first();
+        $user = ::where('email', $userEmail)->first();
         $request->session()->regenerate();
         // Check if the user exists and their authorization status
         if ($user && $user->authorization == false) {
@@ -67,6 +68,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->withCookie(Cookie::forget('laravel_token'));
     }
 }

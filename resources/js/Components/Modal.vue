@@ -71,7 +71,7 @@ const maxWidthClass = computed(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
           >
-            <div v-show="show" class="fixed inset-0 transform transition-all" @click="close">
+            <div v-show="show" class="fixed inset-0 transform transition-all">
               <div class="absolute inset-0 bg-gray-500 opacity-75" />
             </div>
           </Transition>
@@ -87,7 +87,6 @@ const maxWidthClass = computed(() => {
             <div
               v-show="show"
               class="flex items-center justify-center h-screen"
-              @click="close"
               style="pointer-events: auto;"
             >
                 <slot name="content" />

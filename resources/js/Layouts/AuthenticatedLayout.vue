@@ -51,10 +51,10 @@ async function notihandleMgr(){
 
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
+                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')" style="text-decoration: none;">
                                     Dashboard
                                 </NavLink>
-                                <NavLink :href="route('ferie.index')" :active="route().current('ferie.index')">
+                                <NavLink :href="route('ferie.index')" :active="route().current('ferie.index')" style="text-decoration: none;">
                                     Personal Request
                                 </NavLink>
                                 <NavLink v-if="userType=='manager'" :href="route('manager_user.index')" :active="route().current('manager_user.index')">
@@ -62,6 +62,9 @@ async function notihandleMgr(){
                                 </NavLink>
                                 <NavLink id="hiddenLink" :href="route('ferie.index', { tnum: 2 })" :active="route().current('ferie.index')" style="display: none;">
                                     Personal Request
+                                </NavLink>
+                                <NavLink :href="route('warehouse_manage.index')" :active="route().current('warehouse_manage.index')" style="text-decoration: none;">
+                                    WareHouse Management
                                 </NavLink>
                             </div>
                         </div>
@@ -95,10 +98,8 @@ async function notihandleMgr(){
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink :href="route('profile.edit')"> Profile </DropdownLink>
-                                        <DropdownLink :href="route('logout')" method="post" as="button">
-                                            Log Out
-                                        </DropdownLink>
+                                        <DropdownLink :href="route('profile.edit')" style="text-decoration: none;"> Profile </DropdownLink>
+                                        <DropdownLink :href="route('logout')" method="post" as="button"> Log Out </DropdownLink>
                                     </template>
                                 </Dropdown>
                             </div>
@@ -199,7 +200,13 @@ async function notihandleMgr(){
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('ferie.index')" :active="route().current('ferie.index')">
-                            Richiedi ferie
+                            Personal Request
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('manager_user.index')" :active="route().current('manager_user.index')">
+                            User Info
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('warehouse_manage.index')" :active="route().current('warehouse_manage.index')" style="text-decoration: none;">
+                            WareHouse Management
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('manager_user.index')" :active="route().current('manager_user.index')">
                             User Info

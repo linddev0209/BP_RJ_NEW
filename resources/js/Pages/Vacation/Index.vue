@@ -47,7 +47,6 @@ users.map((user)=>{
     managerEmails.push(user.email);
 })
 
-
 const isWholeDay = ref(true);
 const isPeriod = ref(true);
 const isDisabled = ref(true);
@@ -593,7 +592,7 @@ const test = () => {
                         </template>
 
                         <template #content >
-                            <DropdownOption v-for="index in 11" v-model="request_type" @click="selectOption(index-1)" :key="index"> {{dropdownOptions[index-1]}} </DropdownOption>
+                            <DropdownOption v-for="index in dropdownOptions.length" v-model="request_type" @click="selectOption(index-1)" :key="index"> {{dropdownOptions[index-1]}} </DropdownOption>
                         </template>
                     </Dropdown>
                     <InputError :message="form.errors.request_type" class="mt-2"/>

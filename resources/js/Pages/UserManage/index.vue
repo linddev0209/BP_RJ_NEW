@@ -164,8 +164,6 @@ const gotoPage = (page) => {
         <!-- END -->
     </AuthenticatedLayout>
 </template>
-
-
 <style scoped>
 .active {
   background-color: #007bff !important; /* Example background color for the active button */
