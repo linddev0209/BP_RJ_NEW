@@ -47,6 +47,7 @@ users.map((user)=>{
     managerEmails.push(user.email);
 })
 
+
 const isWholeDay = ref(true);
 const isPeriod = ref(true);
 const isDisabled = ref(true);
@@ -551,8 +552,8 @@ const test = () => {
                 <div class="p-2 flex justify-center" style="
                         padding-top: 0px;
                         padding-bottom: 16px" >
-                    <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    Confirm
+                    <button @click = "closeModal" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Confirm
                     </button>
                 </div>
             </div>
@@ -592,7 +593,7 @@ const test = () => {
                         </template>
 
                         <template #content >
-                            <DropdownOption v-for="index in dropdownOptions.length" v-model="request_type" @click="selectOption(index-1)" :key="index"> {{dropdownOptions[index-1]}} </DropdownOption>
+                            <DropdownOption v-for="index in 11" v-model="request_type" @click="selectOption(index-1)" :key="index"> {{dropdownOptions[index-1]}} </DropdownOption>
                         </template>
                     </Dropdown>
                     <InputError :message="form.errors.request_type" class="mt-2"/>

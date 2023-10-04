@@ -39,7 +39,7 @@ class AuthenticatedSessionController extends Controller
         $userEmail = $request->user()->email;
 
         // Retrieve a single user by email
-        $user = ::where('email', $userEmail)->first();
+        $user = User::where('email', $userEmail)->first();
         $request->session()->regenerate();
         // Check if the user exists and their authorization status
         if ($user && $user->authorization == false) {
