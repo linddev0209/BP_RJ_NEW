@@ -57,10 +57,10 @@ async function notihandleMgr(){
                                 <NavLink :href="route('ferie.index')" :active="route().current('ferie.index')" style="text-decoration: none;">
                                     Personal Request
                                 </NavLink>
-                                <NavLink v-if="userType=='manager'" :href="route('manager_user.index')" :active="route().current('manager_user.index')" style="text-decoration: none;">
+                                <NavLink v-if="userType=='manager'" :href="route('manager_user.index')" :active="route().current('manager_user.index')">
                                     User Info
                                 </NavLink>
-                                <NavLink id="hiddenLink" :href="route('ferie.index', { tnum: 2 })" :active="route().current('ferie.index')" style="display: none;text-decoration: none;">
+                                <NavLink id="hiddenLink" :href="route('ferie.index', { tnum: 2 })" :active="route().current('ferie.index')" style="display: none;">
                                     Personal Request
                                 </NavLink>
                                 <NavLink :href="route('warehouse_manage.index')" :active="route().current('warehouse_manage.index')" style="text-decoration: none;">
@@ -207,6 +207,9 @@ async function notihandleMgr(){
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('warehouse_manage.index')" :active="route().current('warehouse_manage.index')" style="text-decoration: none;">
                             WareHouse Management
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('manager_user.index')" :active="route().current('manager_user.index')">
+                            User Info
                         </ResponsiveNavLink>
                     </div>
 

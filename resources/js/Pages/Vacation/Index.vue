@@ -14,7 +14,7 @@ import flatPickr from 'vue-flatpickr-component';
 import 'flatpickr/dist/flatpickr.css';
 import {Italian} from 'flatpickr/dist/l10n/it.js';
 import axios from 'axios';
-import { ref, defineProps, provide } from 'vue';
+import { ref, defineProps, provide, computed } from 'vue';
 import Modal from '@/Components/Modal.vue';
 import { createHydrationRenderer } from 'vue';
 import Pagination from "../../Components/Pagination.vue"; 
@@ -29,9 +29,13 @@ const enddatestate = ref(false);
 const ajax_flag = ref(false);
 const requestListTitle = ref('Pending List');
 const {vacations, notifications, users, userType, userId} = defineProps(['vacations', 'notifications', 'users', 'userType', 'userId']);
-const vacationRefs = ref(vacations);
 const whichPage = ref(1);
-
+const vacationRefs = ref(vacations);
+let userVacations = [];
+userVacations = vacations.filter((vacation) => vacation.user_id == userId);
+let userVacationRefsArray = userVacations;
+let totalPages = 0;
+let totalRefPages = 0; 
 provide(/* key */ 'notifications', /* value */ notifications);
 provide(/* key */ 'vacations', /* value */ vacations);
 provide(/* key */ 'users', /* value */ users);
@@ -42,30 +46,6 @@ users.map((user)=>{
     if(user.user_type==="manager")
     managerEmails.push(user.email);
 })
-
-const currentPage = ref(1); // Initialize currentPage to 1
-let tempManagerVacationArray = vacations
-let tempManagerVacationPageNumber = Math.floor(vacations.length / 2);
-let tempManagerVacationRefArray = vacationRefs.value;
-let tempManagerVacationRefArrayPageNumber = Math.floor(tempManagerVacationRefArray.length / 2)
-//if (userType == "manager"){
-//    vacations
-//}
-const previousPage = () => {
-    if (currentPage.value > 1) {
-        currentPage.value--; // Decrease currentPage by 1
-    }
-}
-
-const nextPage = () => {
-    if (currentPage.value < vacations.length) {
-        currentPage.value++; // Increase currentPage by 1
-    }
-}
-
-const gotoPage = (page) => {
-    currentPage.value = page; // Update currentPage when a page is clicked
-}
 
 const isWholeDay = ref(true);
 const isPeriod = ref(true);
@@ -397,6 +377,17 @@ async function updateShow(status) {
         });
         // Handle the response
         vacationRefs.value = response.data.vacations;
+        if(userType=="employee"){
+
+            userVacationRefsArray = vacationRefs.value.filter((vacationRef) => vacationRef.user_id == userId);
+            totalPages = computed(() => Math.ceil(userVacations.length / itemNumbers) );
+        }else if(userType == "manager"){
+            userVacationRefsArray = vacationRefs.value;
+            totalPages = computed(() => Math.ceil(vacationArray.length / itemNumbers)); 
+        }
+        totalRefPages = computed(() => Math.ceil(userVacationRefsArray.length / itemNumbers));
+        updateTempManagerVacationArray();
+        updateTempManagerRefVacationArray();
         ajax_flag.value = true;
         //document.getElementById('listDom').innerHTML = "<Vacation v-for='vacation in "+response.data.vacations+"' :key='vacation.id':vacation='vacation'/>";
         
@@ -404,6 +395,94 @@ async function updateShow(status) {
         // Handle errors
         refreshPage();
     }
+}
+
+
+///////For Manager/////////
+const currentPage = ref(1); // Initialize currentPage to 1
+const currentManagerRefPage = ref(1); // Initialize currentManagerRefPage to 1
+const tempManagerVacationArray = ref([]); // Use ref for reactive variable
+const tempManagerVacationRefArray = ref([]); // Use ref for reactive variable
+const itemNumbers = 2;
+let vacationArray = vacations;
+// let vacationRefsArray = vacationRefs;
+// Calculate the total number of pages
+if (userType == "employee"){
+    totalPages = computed(() => Math.ceil(userVacations.length / itemNumbers) );
+    vacationArray = userVacations
+}else if(userType == "manager"){
+    totalPages = computed(() => Math.ceil(vacationArray.length / itemNumbers)); // Use computed to make it reactive
+}
+
+// Define the updateTempManagerVacationArray function
+const updateTempManagerVacationArray = () => {
+    tempManagerVacationArray.value = []; // Access .value to modify the ref
+
+    const startIndex = (currentPage.value - 1) * itemNumbers;
+    const endIndex = Math.min(startIndex + itemNumbers, vacationArray.length);
+
+    for (let i = startIndex; i < endIndex; i++) {
+        tempManagerVacationArray.value.push(vacationArray[i]);
+    }
+}
+
+// Initialize the tempManagerVacationArray based on the first page
+updateTempManagerVacationArray();
+
+const previousPage = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--; // Decrease currentPage by 1
+        updateTempManagerVacationArray();
+    }
+}
+
+const nextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++; // Increase currentPage by 1
+        updateTempManagerVacationArray();
+    }
+}
+
+const gotoPage = (page) => {
+    currentPage.value = page; // Update currentPage when a page is clicked
+    updateTempManagerVacationArray();
+}
+
+// Calculate the total number of pages for reference vacations
+totalRefPages = computed(() => Math.ceil(userVacationRefsArray.length / itemNumbers));
+
+// Define the updateTempManagerRefVacationArray function
+const updateTempManagerRefVacationArray = () => {
+    tempManagerVacationRefArray.value = []; // Access .value to modify the ref
+
+    const startIndex = (currentManagerRefPage.value - 1) * itemNumbers;
+    const endIndex = Math.min(startIndex + itemNumbers, userVacationRefsArray.length);
+
+    for (let i = startIndex; i < endIndex; i++) {
+        tempManagerVacationRefArray.value.push(userVacationRefsArray[i]);
+    }
+}
+
+// Initialize the tempManagerVacationRefArray based on the first page
+updateTempManagerRefVacationArray();
+
+const previousRefPage = () => {
+    if (currentManagerRefPage.value > 1) {
+        currentManagerRefPage.value--; // Decrease currentManagerRefPage by 1
+        updateTempManagerRefVacationArray();
+    }
+}
+
+const nextRefPage = () => {
+    if (currentManagerRefPage.value < totalRefPages.value) {
+        currentManagerRefPage.value++; // Increase currentManagerRefPage by 1
+        updateTempManagerRefVacationArray();
+    }
+}
+
+const gotoRefPage = (page) => {
+    currentManagerRefPage.value = page; // Update currentManagerRefPage when a page is clicked
+    updateTempManagerRefVacationArray();
 }
 
 function refreshPage(){
@@ -425,10 +504,10 @@ const closeModal = () => {
 };
 
 const test = () => {
-    console.log(vacations);
-    console.log(vacationRefs);
-    console.log(userId)
-}
+   console.log(vacations);
+   console.log(tempManagerVacationArray.value);
+   console.log(tempManagerVacationRefArray.value);
+ }
 </script>
 
 <template>
@@ -642,39 +721,35 @@ const test = () => {
             </div>
             <div id="listDom" v-if="isManager($page.props.auth.user.email)" class="mt-6 bg-white shadow-sm rounded-lg divide-y">
                 <div v-if="!ajax_flag">
-                    <Vacation v-for="vacation in vacations" :key="vacation.id" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
-                    <nav aria-label="Vacation Pagination" class="pagination">
+                    <Vacation v-for="vacation in tempManagerVacationArray" :key="vacation.id" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="vacations.length !== 0">
                         <ul>
                             <li class="pagination-item" @click="previousPage" :class="{ disabled: currentPage === 1 }">
-                                <button :disabled="currentPage === 1" style="font-size: 10px;">
-                                    prev
-                                </button>
+                                <button :disabled="currentPage === 1" style="font-size: 10px;">prev</button>
                             </li>
-                            <li v-for="page in tempManagerVacationPageNumber" :key="page" >
-                                <button @click="gotoPage(page)" :class="{ active: page == currentPage }">{{ page }}</button>
+                            <li v-for="page in totalPages" :key="page" >
+                                <button @click="gotoPage(page)" :class="{ active: page === currentPage }">{{ page }}</button>
                             </li>
-                            <li class="pagination-item" @click="nextPage" :class="{ disabled: currentPage === tempManagerVacationPageNumber }">
-                                <button :disabled="currentPage === tempManagerVacationPageNumber" style="font-size: 10px;">
-                                    next
-                                </button>
+                            <li class="pagination-item" @click="nextPage" :class="{ disabled: currentPage === totalPages }">
+                                <button :disabled="currentPage === totalPages" style="font-size: 10px;">next</button>
                             </li>
                         </ul>
                     </nav>
                 </div>
                 <div v-else>
-                    <Vacation v-for="vacation in vacationRefs" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
-                    <nav aria-label="Vacation Pagination" class="pagination">
+                    <Vacation v-for="vacation in tempManagerVacationRefArray" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="userVacationRefsArray.length !== 0">
                         <ul>
-                            <li class="pagination-item" @click="previousPage" :class="{ disabled: currentPage === 1 }">
-                                <button :disabled="currentPage === 1" style="font-size: 10px;">
+                            <li class="pagination-item" @click="previousRefPage" :class="{ disabled: currentManagerRefPage === 1 }">
+                                <button :disabled="currentManagerRefPage === 1" style="font-size: 10px;">
                                     prev
                                 </button>
                             </li>
-                            <li v-for="page in tempManagerVacationRefArrayPageNumber" :key="page" >
-                                <button @click="gotoPage(page)" :class="{ active: page == currentPage }">{{ page }}</button>
+                            <li v-for="page in totalRefPages" :key="page" >
+                                <button @click="gotoRefPage(page)" :class="{ active: page == currentManagerRefPage }">{{ page }}</button>
                             </li>
-                            <li class="pagination-item" @click="nextPage" :class="{ disabled: currentPage === tempManagerVacationRefArrayPageNumber }">
-                                <button :disabled="currentPage === tempManagerVacationRefArrayPageNumber" style="font-size: 10px;">
+                            <li class="pagination-item" @click="nextRefPage" :class="{ disabled: currentManagerRefPage === totalRefPages }">
+                                <button :disabled="currentManagerRefPage === totalRefPages" style="font-size: 10px;">
                                     next
                                 </button>
                             </li>
@@ -683,10 +758,44 @@ const test = () => {
                 </div>
             </div>
             <div id="listDom" v-if="!isManager($page.props.auth.user.email)" class="mt-6 bg-white shadow-sm rounded-lg divide-y">
-                <Vacation v-if="!ajax_flag" v-for="vacation in vacations" :key="vacation.id" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
-                <Vacation v-else v-for="vacation in vacationRefs" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                <div v-if="!ajax_flag">
+                    <Vacation v-for="vacation in tempManagerVacationArray" :key="vacation.id" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="userVacationRefsArray.length !== 0">
+                        <ul>
+                            <li class="pagination-item" @click="previousPage" :class="{ disabled: currentPage === 1 }">
+                                <button :disabled="currentPage === 1" style="font-size: 10px;">prev</button>
+                            </li>
+                            <li v-for="page in totalPages" :key="page" >
+                                <button @click="gotoPage(page)" :class="{ active: page === currentPage }">{{ page }}</button>
+                            </li>
+                            <li class="pagination-item" @click="nextPage" :class="{ disabled: currentPage === totalPages }">
+                                <button :disabled="currentPage === totalPages" style="font-size: 10px;">next</button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div v-else>
+                    <Vacation v-for="vacation in tempManagerVacationRefArray" :vacation="vacation" :managerEmails="managerEmails" @handleTest="handleTest()"/>
+                    <nav aria-label="Vacation Pagination" class="pagination" v-if="userVacationRefsArray.length !== 0">
+                        <ul>
+                            <li class="pagination-item" @click="previousRefPage" :class="{ disabled: currentManagerRefPage === 1 }">
+                                <button :disabled="currentManagerRefPage === 1" style="font-size: 10px;">
+                                    prev
+                                </button>
+                            </li>
+                            <li v-for="page in totalRefPages" :key="page" >
+                                <button @click="gotoRefPage(page)" :class="{ active: page == currentManagerRefPage }">{{ page }}</button>
+                            </li>
+                            <li class="pagination-item" @click="nextRefPage" :class="{ disabled: currentManagerRefPage === totalRefPages }">
+                                <button :disabled="currentManagerRefPage === totalRefPages" style="font-size: 10px;">
+                                    next
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
-            <button @click="test">test</button>
+            <!-- <button @click="test">test</button> -->
             
         </div>
         <!-- END -->

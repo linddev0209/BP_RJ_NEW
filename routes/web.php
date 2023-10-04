@@ -29,8 +29,20 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+// Route::get('/dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Route::get('/admin/dashboard', function () {
+//     return Inertia::render('Manager/Dashboard');
+// })->middleware(['auth', 'verified', 'manager'])->name('dashboard');
+
+// Route::get('/admin/dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);
+// Route::get('/admin/dashboard', [NotificationController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);;
 
 Route::delete('/vacations/{id}', [VacationController::class, 'destroy'])->name('vacations.destroy');
 Route::delete('/deleteWarehouse/{id}', [WarehouseController::class, 'destroy'])->name('deleteWarehouse.destroy');
@@ -51,6 +63,16 @@ Route::resource('manager_user', UserController::class)
 Route::resource('warehouse_manage', WarehouseController::class)
     ->only(['index'])
     ->middleware(['auth', 'verified']);
+
+Route::resource('manager_user', UserController::class)
+    ->only(['index'])
+    ->middleware(['auth', 'verified']);
+
+Route::middleware('auth')->group(function () {
+    Route::post('/user_authorization_update/{employee_id}', [UserController::class, 'update']);
+    Route::post('/user_info_update/{employee_id}', [UserController::class, 'updateInfo']);
+    Route::delete('/user_info_delete/{employee_id}', [UserController::class, 'deleteUserInfo']);
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
