@@ -306,7 +306,7 @@
   }
 
   const returnAction = (post) => {
-    if( post.value.returnedNum < post.value.quantity )
+    if( ( post.value.returnedNum < post.value.quantity ) && ( post.value.allowedNum == post.value.quantity ) )
     {
       post.value.returnedNum += 1;
       updateWarehouseReturned(createJSONEdit(post, false), post);    
@@ -320,7 +320,7 @@
     validateInput( true )
 
     // AJAX Post for Registration
-    registerWarehouse(createJSON(pivindex.value), post)
+    registerWarehouse(createJSON(pivindex.value))
     //
   }
 
@@ -618,6 +618,8 @@
         });
         
         // Handle the response
+        if( post.value.allowedNum == post.value.quantity && post.value.databaseid == 1 )
+          emit('on-load', "Everything is sent to " + post.value.title, 2);
         
     } catch (error) {
         // Handle errors

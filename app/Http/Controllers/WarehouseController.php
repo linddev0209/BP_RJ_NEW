@@ -60,7 +60,16 @@ class WarehouseController extends Controller
             }
             
             Warehouse::find($warehoseid)->increment('tempered');
-            return response()->json(['state' => 111], 200);
+            if( $quantity == $allowedNum && $databaseid == 1 )
+            {
+                Requesters::where('id', $requesterid)->update(['delflag' => true]);
+                Warehouse::where('id', $warehoseid)->update(['delflag' => true]);
+
+                if( $databaseid == 1 )
+                {
+                    Products::where('id', $pivid)->update(['usedamount' => 0]);
+                }
+            }
         }
         else
         {
@@ -83,6 +92,7 @@ class WarehouseController extends Controller
             {
                 Requesters::where('id', $requesterid)->update(['delflag' => true]);
                 Warehouse::where('id', $warehoseid)->update(['delflag' => true]);
+
                 if( $databaseid == 1 )
                 {
                     Products::where('id', $pivid)->update(['usedamount' => 0]);
