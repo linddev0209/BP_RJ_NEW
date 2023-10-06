@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-        
+        // dd($request->session()->regenerate());
         
         $userEmail = $request->user()->email;
 
@@ -47,7 +47,7 @@ class AuthenticatedSessionController extends Controller
 
             $request->session()->invalidate();
 
-            $request->session()->regenerateToken();
+            $request->session()->regenerate();
             throw ValidationException::withMessages([
                 'email' => trans('auth.authorization'),
             ]);
@@ -66,7 +66,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->invalidate();
 
-        $request->session()->regenerateToken();
+        $request->session()->regenerate();
 
         return redirect('/')->withCookie(Cookie::forget('laravel_token'));
     }
