@@ -20,6 +20,13 @@ async function onDeleteClick( id, status ){
     }
 }
 
+function convertDate( italianDate ) {
+    const parts = italianDate.split('-');
+    const [day, month, year] = parts;
+    const ukDate = `${year}-${month}-${day}`;
+    return ukDate;
+}
+
 </script>
 
 <template>
@@ -54,9 +61,9 @@ async function onDeleteClick( id, status ){
                         </button>
                     </div>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.request_type }}</p>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.start_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.start_date) }} </span>
                     <span class="text-1xl  tracking-tight text-gray-600">  ~  </span>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.end_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.end_date) }} </span>
                     <small v-if="vacation.start_time != '00:00'" class="ml-2 text-sm text-gray-600">{{vacation.start_time}}~{{ vacation.end_time }}</small>
                     <small v-else class="ml-2 text-sm text-gray-600">All day</small>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.reason }}</p>
@@ -114,9 +121,9 @@ async function onDeleteClick( id, status ){
                         </div>
                     </div>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.request_type }}</p>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.start_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.start_date) }} </span>
                     <span class="text-1xl  tracking-tight text-gray-600">  ~  </span>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.end_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.end_date) }} </span>
                     <small v-if="vacation.start_time != '00:00'" class="ml-2 text-sm text-gray-600">{{vacation.start_time}}~{{ vacation.end_time }}</small>
                     <small v-else class="ml-2 text-sm text-gray-600">All day</small>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.reason }}</p>
@@ -150,9 +157,9 @@ async function onDeleteClick( id, status ){
                         </div>
                     </div>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.request_type }}</p>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.start_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.start_date) }} </span>
                     <span class="text-1xl  tracking-tight text-gray-600">  ~  </span>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.end_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.end_date) }} </span>
                     <small v-if="vacation.start_time != '00:00'" class="ml-2 text-sm text-gray-600">{{vacation.start_time}}~{{ vacation.end_time }}</small>
                     <small v-else class="ml-2 text-sm text-gray-600">All day</small>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.reason }}</p>
@@ -198,9 +205,9 @@ async function onDeleteClick( id, status ){
                         </div>
                     </div>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.request_type }}</p>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.start_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.start_date) }} </span>
                     <span class="text-1xl  tracking-tight text-gray-600">  ~  </span>
-                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ vacation.end_date }} </span>
+                    <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(vacation.end_date) }} </span>
                     <small v-if="vacation.start_time != '00:00'" class="ml-2 text-sm text-gray-600">{{vacation.start_time}}~{{ vacation.end_time }}</small>
                     <small v-else class="ml-2 text-sm text-gray-600">All day</small>
                     <p class="mt-4 text-lg text-gray-600">{{ vacation.reason }}</p>

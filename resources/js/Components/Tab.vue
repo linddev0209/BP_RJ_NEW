@@ -54,7 +54,7 @@
                   <DisclosureButton
                   class="flex w-full justify-between rounded-lg bg-purple-100 px-4 py-2 text-left text-sm font-medium text-purple-900 hover:bg-purple-200 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75"
                   >
-                      <span>{{ post.value.title }}({{ post.value.date }})</span>
+                      <span>{{ post.value.title }}({{ convertDate(post.value.date) }})</span>
                       <ChevronUpIcon
                           :class="open ? 'rotate-180 transform' : ''"
                           class="h-5 w-5 text-purple-500"
@@ -98,7 +98,7 @@
                   <DisclosureButton v-if=" post.value.title == who "
                   class="flex w-full justify-between rounded-lg bg-purple-100 px-4 py-2 text-left text-sm font-medium text-purple-900 hover:bg-purple-200 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75"
                   >
-                      <span>{{ post.value.date }}</span>
+                      <span>{{ convertDate(post.value.date) }}</span>
                       <ChevronUpIcon
                           :class="open ? 'rotate-180 transform' : ''"
                           class="h-5 w-5 text-purple-500"
@@ -295,6 +295,13 @@
   //
 
   const isDisabled = ref(false);
+
+  function convertDate( italianDate ) {
+      const parts = italianDate.split('-');
+      const [day, month, year] = parts;
+      const ukDate = `${year}-${month}-${day}`;
+      return ukDate;
+  }
 
   const allowAction = (post) => {
     

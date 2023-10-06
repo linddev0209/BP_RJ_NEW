@@ -22,8 +22,8 @@
           <table-cell v-if="databaseid == 3">{{ datum['targa'] }}</table-cell>
           <table-cell v-if="databaseid == 3">{{ datum['username'] }}</table-cell>
           <table-cell>{{ datum['comments'] }}</table-cell>
-          <table-cell>{{ datum['doi'] }}</table-cell>
-          <table-cell>{{ datum['dom'] }}</table-cell>
+          <table-cell>{{ convertDate(datum['doi'].split(' ')[0])+' '+ datum['doi'].split(' ')[1] }}</table-cell>
+          <table-cell>{{ convertDate(datum['dom'].split(' ')[0])+' '+ datum['dom'].split(' ')[1] }}</table-cell>
           <table-cell>{{ datum['mne'] }}</table-cell>
           <table-cell>{{ datum['mnm'] }}</table-cell>
           
@@ -78,8 +78,9 @@
                     <p class="ml-2" style="color: gray">Selete Date</p>
                     <flat-pickr 
                                 id="fromthe"
+                                :config = "config_date"
                                 v-model="s_date"
-                                placeholder="YY-MM-DD"
+                                placeholder="DD-MM-YY"
                                 class=" block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                 readonly="readonly"
                     />
@@ -113,6 +114,7 @@
   import NumberInput from './NumberInput.vue';
   import PrimaryButton from './PrimaryButton.vue'
   import flatPickr from 'vue-flatpickr-component';
+  import {Italian} from 'flatpickr/dist/l10n/it.js';
   import { ref } from 'vue'
 
   const emit = defineEmits();
@@ -122,6 +124,26 @@
   const s_date = ref();
   const quantity = ref(1);
   const databases = ['Products', 'Instruments', 'Vehciles'];
+  
+  const config_date = ref({
+  // set wrap to true only when using 'input-group'
+      altFormat: 'd-m-Y',
+      dateFormat: 'd-m-Y',
+      locale: Italian, // locale for this instance only
+
+      "disable": [
+          function (date) {
+              // return true to disable
+              return (date.getDay() === 0 || date.getDay() === 6);
+
+          },
+          {
+              from:"01-01-1901",
+              to: new Date().fp_incr(-1),
+          }
+
+      ]
+  });
 
   const orderClicked = (datum) => {
     // Call your 'orderClicked' function with the ID
@@ -182,11 +204,17 @@
     jsonObject.PIVtype = databaseid;
     if( databaseid != 3 )
       jsonObject.quantity = quantity.value;
-    jsonObject.request_date = s_date.value;
+    jsonObject.request_date = convertDate(s_date.value);
 
     return jsonObject;
   }
 
+  function convertDate( italianDate ) {
+      const parts = italianDate.split('-');
+      const [day, month, year] = parts;
+      const ukDate = `${year}-${month}-${day}`;
+      return ukDate;
+  }
 
   function showModal(){
     isModalVisible.value = true;
