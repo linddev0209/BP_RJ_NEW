@@ -5,6 +5,7 @@ use App\Http\Controllers\VacationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\CsrfTokenController;
 use App\Models\Notification;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -57,9 +58,7 @@ Route::post('/updateWarehouseEdit', [WarehouseController::class, 'edit']);
 Route::resource('ferie', VacationController::class)
     ->only(['index', 'store'])
     ->middleware(['auth', 'verified']);
-Route::resource('manager_user', UserController::class)
-    ->only(['index'])
-    ->middleware(['auth', 'verified']);
+
 Route::resource('warehouse_manage', WarehouseController::class)
     ->only(['index'])
     ->middleware(['auth', 'verified']);
@@ -79,5 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/get-new-csrf-token', [CsrfTokenController::class, 'generateToken']);
 
 require __DIR__.'/auth.php';

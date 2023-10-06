@@ -3,14 +3,14 @@ import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import UserManager from "@/Components/UserManager.vue";
 import 'flatpickr/dist/flatpickr.css';
-import { ref, defineProps, provide, computed } from 'vue';
+import { ref, defineProps, provide, computed, onMounted } from 'vue';
 const managerEmails = [];
 const requestListTitle = ref('User Info');
 const {vacations, notifications, users, userType, userId} = defineProps(['vacations', 'notifications', 'users', 'userType', 'userId']);
 const currentPage = ref(1); // Initialize currentPage to 1
 const tempEmployeesArray = ref([]); // Use ref for reactive variable
 const itemNumbers = 5;
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+let csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 provide(/* key */ 'notifications', /* value */ notifications);
 provide(/* key */ 'vacations', /* value */ vacations);
@@ -50,7 +50,7 @@ const handleRemove = async (id) => {
             },
         });
     }
-    catch(err){
+    catch(err){ 
         console.log(err)
     }
     employees = employees.filter((employee) => employee.id !== id)
@@ -133,6 +133,21 @@ const gotoPage = (page) => {
     currentPage.value = page; // Update currentPage when a page is clicked
     updateTempEmployeesArray();
 }
+
+const regenerateCsrfToken = () => {
+    // You can make an AJAX request to your server to fetch a new CSRF token
+    // For example, using Axios:
+    axios.get('/get-new-csrf-token').then((response) => {
+        csrfToken = response.data.csrfToken;
+    }).catch((error) => {
+        console.error('Error fetching new CSRF token', error);
+    });
+}
+
+onMounted(() => {
+    regenerateCsrfToken();
+});
+
 </script>
 
 <template>
