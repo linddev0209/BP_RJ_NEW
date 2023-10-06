@@ -138,15 +138,14 @@ const regenerateCsrfToken = () => {
     // You can make an AJAX request to your server to fetch a new CSRF token
     // For example, using Axios:
     axios.get('/get-new-csrf-token').then((response) => {
-    csrfToken = response.data.csrfToken;
+        csrfToken = response.data.csrfToken;
     }).catch((error) => {
-    console.error('Error fetching new CSRF token', error);
+        console.error('Error fetching new CSRF token', error);
     });
 }
 
 onMounted(() => {
     regenerateCsrfToken();
-    console.log("csrfToken");
 });
 
 </script>
