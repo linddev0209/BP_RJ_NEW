@@ -45,7 +45,7 @@
                                                 />
                                             </DisclosureButton>
                                             <DisclosurePanel class="px-4 pt-4 pb-2 text-sm text-gray-500">
-                                                <span class="mt-4 text-1xl font-bold text-yellow-700">{{detailedEvent.start_date}} {{detailedEvent.start_time}} ~ {{ detailedEvent.end_date }} {{detailedEvent.end_time}}</span><br/>
+                                                <span class="mt-4 text-1xl font-bold text-yellow-700">{{ convertDate(detailedEvent.start_date) }} {{detailedEvent.start_time}} ~ {{ convertDate(detailedEvent.end_date) }} {{detailedEvent.end_time}}</span><br/>
                                                 {{ detailedEvent.reason }}
                                             </DisclosurePanel>
                                         </Disclosure>
@@ -186,6 +186,13 @@ const currentDay = currentDate.getDate();
 const _userId = inject('userId');
 const _userType = inject('userType');
 var currentMonthDays = getDaysInMonth(currentYear, currentMonth);
+
+function convertDate( italianDate ) {
+    const parts = italianDate.split('-');
+    const [day, month, year] = parts;
+    const ukDate = `${year}-${month}-${day}`;
+    return ukDate;
+}
 
 function closeModal() {
   isOpen.value = false

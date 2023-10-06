@@ -208,9 +208,6 @@ async function notihandleMgr(){
                         <ResponsiveNavLink :href="route('warehouse_manage.index')" :active="route().current('warehouse_manage.index')" style="text-decoration: none;">
                             WareHouse Management
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('manager_user.index')" :active="route().current('manager_user.index')">
-                            User Info
-                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
